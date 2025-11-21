@@ -87,9 +87,11 @@ class PDFComparator:
         return list(diff)
 
     def convert_to_images(self, file_path):
-        # This requires poppler installed and in PATH
-        # User provided path: C:\poppler-25.11.0\Library\bin
+        # Try to use the user-specific path if it exists, otherwise rely on system PATH
         poppler_path = r"C:\poppler-25.11.0\Library\bin"
+        if not os.path.exists(poppler_path):
+            poppler_path = None
+            
         try:
             return convert_from_path(file_path, poppler_path=poppler_path)
         except Exception as e:
