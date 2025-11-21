@@ -12,3 +12,6 @@ env/
 # IDEs
 .vscode/
 .idea/
+
+# Test Artifacts
+diff_result_preview.png
