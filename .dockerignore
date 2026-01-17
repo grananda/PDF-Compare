@@ -24,7 +24,7 @@ build/
 !README.md
 tests/
 *.test.py
-sample_docs/
+sample_files/
 .DS_Store
 Thumbs.db
 uv.lock
