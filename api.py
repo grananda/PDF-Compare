@@ -7,6 +7,7 @@ Provides REST API endpoints to compare PDFs from JavaScript/Node.js
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
+import io
 import tempfile
 from comparator import PDFComparator
 
@@ -73,12 +74,14 @@ def compare_pdfs():
                 if not visual_results:
                     return jsonify({'error': 'No comparison results generated'}), 500
 
-                # Save PDF report using PIL
-                visual_results[0].save(output_path, save_all=True, append_images=visual_results[1:])
+                # Save PDF report to memory buffer
+                pdf_buffer = io.BytesIO()
+                visual_results[0].save(pdf_buffer, format='PDF', save_all=True, append_images=visual_results[1:])
+                pdf_buffer.seek(0)
 
-                # Return PDF file
+                # Return PDF file from memory
                 return send_file(
-                    output_path,
+                    pdf_buffer,
                     mimetype='application/pdf',
                     as_attachment=True,
                     download_name='comparison_report.pdf'
@@ -145,10 +148,14 @@ def compare_pdf_urls():
                 if not visual_results:
                     return jsonify({'error': 'No comparison results generated'}), 500
 
-                visual_results[0].save(output_path, save_all=True, append_images=visual_results[1:])
+                # Save PDF report to memory buffer
+                pdf_buffer = io.BytesIO()
+                visual_results[0].save(pdf_buffer, format='PDF', save_all=True, append_images=visual_results[1:])
+                pdf_buffer.seek(0)
 
+                # Return PDF file from memory
                 return send_file(
-                    output_path,
+                    pdf_buffer,
                     mimetype='application/pdf',
                     as_attachment=True,
                     download_name='comparison_report.pdf'
