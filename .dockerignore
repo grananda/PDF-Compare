@@ -24,10 +24,11 @@ build/
 !README.md
 tests/
 *.test.py
-sample_files/
+sample-files/
 .DS_Store
 Thumbs.db
-uv.lock
+# uv.lock - NOT ignored, needed for reproducible builds
+node_modules/
 .python-version
 output_*
 report_*

@@ -62,12 +62,96 @@ class PDFComparator:
         
         return list(diff)
 
+    def get_poppler_path(self):
+        """
+        Find Poppler binaries in the following order:
+        1. Bundled with PyInstaller executable (Windows)
+        2. Bundled in vendor/poppler (Windows development)
+        3. Platform-specific common paths
+        4. System PATH (return None)
+        """
+        import sys
+        import platform
+
+        system = platform.system()
+
+        # Check if running as PyInstaller bundle (Windows only)
+        if system == "Windows" and getattr(sys, 'frozen', False):
+            bundle_dir = sys._MEIPASS
+            bundled_poppler = os.path.join(bundle_dir, 'poppler', 'Library', 'bin')
+            if os.path.exists(bundled_poppler):
+                return bundled_poppler
+
+        # Check vendor directory (Windows development only - contains .exe files)
+        if system == "Windows":
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            vendor_poppler = os.path.join(script_dir, 'vendor', 'poppler', 'Library', 'bin')
+            if os.path.exists(vendor_poppler):
+                return vendor_poppler
+
+        # Platform-specific paths
+        if system == "Windows":
+            user_paths = [
+                r"C:\poppler-25.11.0\Library\bin",
+                r"C:\poppler-24.08.0\Library\bin",
+                r"C:\Program Files\poppler\Library\bin",
+                r"C:\Program Files (x86)\poppler\Library\bin",
+            ]
+        elif system == "Darwin":  # macOS
+            user_paths = [
+                "/opt/homebrew/bin",           # Apple Silicon Homebrew
+                "/usr/local/bin",              # Intel Homebrew
+                "/opt/homebrew/opt/poppler/bin",
+                "/usr/local/opt/poppler/bin",
+            ]
+        else:  # Linux
+            user_paths = [
+                "/usr/bin",
+                "/usr/local/bin",
+            ]
+
+        for path in user_paths:
+            pdftoppm = os.path.join(path, "pdftoppm.exe" if system == "Windows" else "pdftoppm")
+            if os.path.exists(pdftoppm):
+                return path
+
+        # Fall back: check if pdftoppm is in system PATH
+        import shutil
+        pdftoppm_path = shutil.which("pdftoppm")
+        if pdftoppm_path:
+            # Return the directory containing pdftoppm
+            return os.path.dirname(pdftoppm_path)
+
+        # Not found anywhere
+        return None
+
     def convert_to_images(self, file_path):
-        # Try to use the user-specific path if it exists, otherwise rely on system PATH
-        poppler_path = r"C:\poppler-25.11.0\Library\bin"
-        if not os.path.exists(poppler_path):
-            poppler_path = None
-            
+        import platform
+        import shutil
+
+        poppler_path = self.get_poppler_path()
+        system = platform.system()
+        pdftoppm_name = "pdftoppm.exe" if system == "Windows" else "pdftoppm"
+
+        # Verify pdftoppm is accessible
+        pdftoppm_found = False
+        if poppler_path:
+            pdftoppm_found = os.path.exists(os.path.join(poppler_path, pdftoppm_name))
+        else:
+            pdftoppm_found = shutil.which("pdftoppm") is not None
+
+        if not pdftoppm_found:
+            print("Error: Poppler (pdftoppm) not found!")
+            if system == "Windows":
+                print("Install from: https://github.com/oschwartz10612/poppler-windows/releases")
+                print("Or run: uv run python scripts/download_poppler.py")
+            elif system == "Darwin":
+                print("Install with: brew install poppler")
+            else:
+                print("Install with: sudo apt install poppler-utils  (Debian/Ubuntu)")
+                print("          or: sudo dnf install poppler-utils  (Fedora)")
+            return []
+
         try:
             return convert_from_path(file_path, poppler_path=poppler_path)
         except Exception as e:
