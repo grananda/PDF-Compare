@@ -22,6 +22,38 @@ A powerful Python-based tool for comparing PDF files. It provides both text-base
 ### 1. Python
 Ensure you have Python 3.12 or higher installed.
 
+**Windows:**
+1. Download from [python.org](https://www.python.org/downloads/)
+2. Run the installer
+3. **Important:** Check "Add Python to PATH" during installation
+4. Verify: `python --version`
+
+**macOS:**
+```bash
+# Using Homebrew (recommended)
+brew install python@3.12
+
+# Verify
+python3 --version
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install python3.12 python3.12-venv
+
+# Verify
+python3 --version
+```
+
+**Linux (Fedora):**
+```bash
+sudo dnf install python3.12
+
+# Verify
+python3 --version
+```
+
 ### 2. Package Manager (uv)
 This project uses **uv** for fast, reliable Python package management:
 
@@ -54,6 +86,12 @@ Install via apt:
 sudo apt-get install poppler-utils
 ```
 
+#### Linux (Fedora)
+Install via dnf:
+```bash
+sudo dnf install poppler-utils
+```
+
 ## Installation
 
 1.  Clone the repository:
@@ -81,11 +119,95 @@ uv run python main.py
 3.  Click **Compare PDFs**.
 4.  View the results and click **Download Report** to save.
 
+### Windows Executable (for non-technical users)
+
+You can build a fully standalone `.exe` file that runs without Python or any other dependencies.
+
+#### Quick Start
+
+```bash
+# 1. Download Poppler binaries (one-time setup)
+uv run python scripts/download_poppler.py
+
+# 2. Build the executable
+uv run python build_exe.py
+
+# Result: dist/PDF Compare.exe (~100 MB)
+```
+
+#### Scripts Reference
+
+**`scripts/download_poppler.py`** - Downloads Poppler binaries for Windows
+
+```bash
+uv run python scripts/download_poppler.py
+```
+
+| Option | Description |
+|--------|-------------|
+| Downloads from | GitHub (oschwartz10612/poppler-windows) |
+| Installs to | `vendor/poppler/` |
+| Size | ~25 MB |
+| Required for | Bundling Poppler in the executable |
+
+The script:
+1. Downloads the latest Poppler release for Windows
+2. Extracts to `vendor/poppler/`
+3. Verifies the installation
+
+**`build_exe.py`** - Builds the Windows executable using PyInstaller
+
+```bash
+uv run python build_exe.py
+```
+
+| Option | Description |
+|--------|-------------|
+| Output | `dist/PDF Compare.exe` |
+| Size (with Poppler) | ~100 MB |
+| Size (without Poppler) | ~80 MB |
+| Dependencies | PyInstaller (dev dependency) |
+
+The script:
+1. Detects if Poppler is available in `vendor/poppler/`
+2. Cleans previous builds
+3. Runs PyInstaller with optimized settings
+4. Bundles all dependencies into a single `.exe`
+
+#### Distribution
+
+**For end users:**
+1. Copy `PDF Compare.exe` to the user's computer
+2. User double-clicks to run
+3. Optionally create a desktop shortcut
+
+**Requirements for end users:**
+- Windows 10/11
+- No other dependencies needed (Poppler is bundled)
+
+#### Customization
+
+**Add a custom icon:**
+1. Place your icon at `assets/icon.ico`
+2. Rebuild with `uv run python build_exe.py`
+
+**Build without bundled Poppler:**
+Skip the `download_poppler.py` step. The executable will be smaller (~80 MB) but users will need to install Poppler separately.
+
+#### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Poppler not found" at runtime | Re-run `download_poppler.py` and rebuild |
+| Build fails | Ensure `uv sync` was run and PyInstaller is installed |
+| Executable too large | This is normal; it includes Python, libraries, and Poppler |
+| Antivirus warning | False positive; PyInstaller executables are sometimes flagged |
+
 ### Command Line Interface (CLI)
 Run the comparison from the terminal:
 
 ```bash
-uv run python compare_pdf.py ./sample_files/original.pdf ./sample_files/modified.pdf -o ./sample_files/output_report.pdf
+uv run python compare_pdf.py ./sample-files/original.pdf ./sample-files/modified.pdf -o ./sample-files/output_report.pdf
 ```
 
 ### Node.js CLI Wrapper
@@ -273,8 +395,8 @@ comparePDFs('./original.pdf', './modified.pdf', './report.pdf');
 ```bash
 # Compare files
 curl -X POST http://localhost:5000/compare \
-  -F "file_a=@./sample_files/original.pdf" \
-  -F "file_b=@./sample_files/modified.pdf" \
+  -F "file_a=@./sample-files/original.pdf" \
+  -F "file_b=@./sample-files/modified.pdf" \
   -F "output_format=pdf" \
   --output comparison_report.pdf
 
@@ -381,22 +503,22 @@ podman build --build-arg PYTHON_VERSION=3.13 -t pdf-compare .
 # Docker (Linux/macOS)
 docker run --rm \
     -v "$(pwd):/app" \
-    pdf-compare /app/sample_files/original.pdf /app/sample_files/modified.pdf -o /app/sample_files/report.pdf
+    pdf-compare /app/sample-files/original.pdf /app/sample-files/modified.pdf -o /app/sample-files/report.pdf
 
 # Docker (Windows PowerShell)
 docker run --rm `
     -v "${PWD}:/app" `
-    pdf-compare /app/sample_files/original.pdf /app/sample_files/modified.pdf -o /app/sample_files/report.pdf
+    pdf-compare /app/sample-files/original.pdf /app/sample-files/modified.pdf -o /app/sample-files/report.pdf
 
 # Podman (Linux - requires :Z for SELinux)
 podman run --rm \
     -v "$(pwd):/app:Z" \
-    pdf-compare /app/sample_files/original.pdf /app/sample_files/modified.pdf -o /app/sample_files/report.pdf
+    pdf-compare /app/sample-files/original.pdf /app/sample-files/modified.pdf -o /app/sample-files/report.pdf
 
 # Podman (macOS - no SELinux)
 podman run --rm \
     -v "$(pwd):/app" \
-    pdf-compare /app/sample_files/original.pdf /app/sample_files/modified.pdf -o /app/sample_files/report.pdf
+    pdf-compare /app/sample-files/original.pdf /app/sample-files/modified.pdf -o /app/sample-files/report.pdf
 ```
 
 **CLI Container Build Arguments:**
@@ -590,6 +712,7 @@ If you insert a page in the middle of a document:
 ```
 PDF-Compare/
 ├── api.py                  # REST API server
+├── build_exe.py            # Windows executable builder
 ├── client-example.js       # JavaScript client examples (API usage)
 ├── compare_pdf.py          # Python CLI entry point
 ├── comparator.py           # Core comparison logic
@@ -598,7 +721,9 @@ PDF-Compare/
 ├── package.json            # Node.js package configuration
 ├── pyproject.toml          # Python dependencies (uv)
 ├── uv.lock                 # Dependency lock file
-├── sample_files/           # Sample PDFs for testing
+├── scripts/
+│   └── download_poppler.py # Poppler downloader for Windows
+├── sample-files/           # Sample PDFs for testing
 ├── Containerfile           # OCI container (CLI)
 ├── api.Containerfile       # OCI container (Flask API)
 └── README.md               # This file
