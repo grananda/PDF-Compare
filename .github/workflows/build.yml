@@ -105,6 +105,12 @@ jobs:
         with:
           path: artifacts
 
+      - name: Debug - List artifacts structure
+        run: |
+          echo "=== Artifacts structure ==="
+          find artifacts -type f -o -type d | head -100
+          echo "==========================="
+
       - name: Prepare release assets
         run: |
           mkdir -p release
@@ -114,11 +120,11 @@ jobs:
           chmod +x release/pdf-compare-linux
 
           # Windows executable
-          cp "artifacts/PDF-Compare.exe/PDF Compare.exe" release/PDF-Compare-windows.exe
+          cp artifacts/PDF-Compare.exe/PDF\ Compare.exe release/PDF-Compare-windows.exe
 
-          # macOS app bundle (zip it)
+          # macOS app bundle (zip it) - the .app is extracted directly into the artifact folder
           cd artifacts/PDF-Compare-macOS
-          zip -r ../../release/PDF-Compare-macOS.zip "PDF Compare.app"
+          zip -r ../../release/PDF-Compare-macOS.zip .
           cd ../..
 
       - name: Create Release
