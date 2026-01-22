@@ -83,11 +83,6 @@ jobs:
             artifact_name: pdf-compare
             artifact_path: dist/pdf-compare
             build_script: scripts/build_linux.py
-          - os: macos-12
-            name: macOS-Intel
-            artifact_name: PDF-Compare-macOS-Intel
-            artifact_path: dist/PDF-Compare-macOS-Intel.dmg
-            build_script: scripts/build_macos.py
           - os: macos-latest
             name: macOS-ARM
             artifact_name: PDF-Compare-macOS-ARM
@@ -199,10 +194,7 @@ jobs:
           # Windows executable
           cp artifacts/PDF-Compare.exe/PDF\ Compare.exe release/PDF-Compare-windows.exe
 
-          # macOS DMG (Intel)
-          cp artifacts/PDF-Compare-macOS-Intel/PDF-Compare-macOS-Intel.dmg release/PDF-Compare-macOS-Intel.dmg
-
-          # macOS DMG (Apple Silicon)
+          # macOS DMG (ARM/Apple Silicon)
           cp artifacts/PDF-Compare-macOS-ARM/PDF-Compare-macOS-ARM.dmg release/PDF-Compare-macOS-ARM.dmg
 
       - name: Create tag and release
@@ -217,7 +209,6 @@ jobs:
           gh release create "$VERSION" \
             release/pdf-compare-linux \
             release/PDF-Compare-windows.exe \
-            release/PDF-Compare-macOS-Intel.dmg \
             release/PDF-Compare-macOS-ARM.dmg \
             --title "$VERSION" \
             --generate-notes
