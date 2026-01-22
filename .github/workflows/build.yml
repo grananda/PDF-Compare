@@ -84,9 +84,9 @@ jobs:
             artifact_path: dist/pdf-compare
             build_script: scripts/build_linux.py
           - os: macos-latest
-            name: macOS
-            artifact_name: PDF-Compare-macOS
-            artifact_path: dist/PDF-Compare-macOS.dmg
+            name: macOS-ARM
+            artifact_name: PDF-Compare-macOS-ARM
+            artifact_path: dist/PDF-Compare-macOS-ARM.dmg
             build_script: scripts/build_macos.py
           - os: windows-latest
             name: Windows
@@ -121,7 +121,7 @@ jobs:
 
       # macOS: Install Poppler and create-dmg via Homebrew
       - name: Install Poppler and create-dmg (macOS)
-        if: matrix.os == 'macos-latest'
+        if: startsWith(matrix.os, 'macos')
         run: brew install poppler create-dmg
 
       # Windows: Download Poppler
@@ -139,7 +139,7 @@ jobs:
 
       # macOS: Create DMG from app bundle
       - name: Create DMG (macOS)
-        if: matrix.os == 'macos-latest'
+        if: startsWith(matrix.os, 'macos')
         run: |
           create-dmg \
             --volname "PDF Compare" \
@@ -149,20 +149,11 @@ jobs:
             --icon "PDF Compare.app" 150 185 \
             --hide-extension "PDF Compare.app" \
             --app-drop-link 450 185 \
-            "dist/PDF-Compare-macOS.dmg" \
+            "${{ matrix.artifact_path }}" \
             "dist/PDF Compare.app"
 
-      # Upload artifact (different handling for .app bundle on macOS)
-      - name: Upload artifact (Linux/Windows)
-        if: matrix.os != 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_path }}
-          if-no-files-found: error
-
-      - name: Upload artifact (macOS)
-        if: matrix.os == 'macos-latest'
+      # Upload artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
@@ -203,8 +194,8 @@ jobs:
           # Windows executable
           cp artifacts/PDF-Compare.exe/PDF\ Compare.exe release/PDF-Compare-windows.exe
 
-          # macOS DMG
-          cp artifacts/PDF-Compare-macOS/PDF-Compare-macOS.dmg release/PDF-Compare-macOS.dmg
+          # macOS DMG (ARM/Apple Silicon)
+          cp artifacts/PDF-Compare-macOS-ARM/PDF-Compare-macOS-ARM.dmg release/PDF-Compare-macOS-ARM.dmg
 
       - name: Create tag and release
         env:
@@ -218,7 +209,7 @@ jobs:
           gh release create "$VERSION" \
             release/pdf-compare-linux \
             release/PDF-Compare-windows.exe \
-            release/PDF-Compare-macOS.dmg \
+            release/PDF-Compare-macOS-ARM.dmg \
             --title "$VERSION" \
             --generate-notes
 
