@@ -2,9 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: ['**']
   workflow_dispatch:
 
 jobs:
@@ -72,8 +70,26 @@ jobs:
             fi
           fi
 
+  verify-npm-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify npm token
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Verifying npm authentication..."
+          npm whoami
+          echo "npm token is valid"
+
   build:
     needs: check-versions
+    if: needs.check-versions.outputs.should_release_bin == 'true' || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
