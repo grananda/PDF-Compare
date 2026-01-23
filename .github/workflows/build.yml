@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: ['*']  # TEMP: testing npm publish, revert to [main]
+    branches: ['*']
   workflow_dispatch:
 
 jobs:
@@ -61,14 +61,31 @@ jobs:
             echo "should_publish=false" >> $GITHUB_OUTPUT
             echo "Tag npm-v${{ steps.get_npm_version.outputs.version }} already exists"
           else
-            if [[ "${{ github.event_name }}" == "push" ]]; then  # TEMP: removed main branch check
+            if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
               echo "should_publish=true" >> $GITHUB_OUTPUT
               echo "Tag npm-v${{ steps.get_npm_version.outputs.version }} does not exist - will publish to npm"
             else
               echo "should_publish=false" >> $GITHUB_OUTPUT
-              echo "Not a push event - skipping npm publish"
+              echo "Not on main branch push - skipping npm publish"
             fi
           fi
+
+  verify-npm-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify npm token
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Verifying npm authentication..."
+          npm whoami
+          echo "npm token is valid"
 
   build:
     needs: check-versions
