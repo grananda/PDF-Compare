@@ -33,11 +33,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/home/appuser/.local/bin:$PATH"
 
 # Install system dependencies
-# - poppler-utils: Required for pdf2image
 # - curl: Required to install uv and health checks
 # - ca-certificates: Required for HTTPS
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    poppler-utils \
     curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

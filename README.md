@@ -1,11 +1,13 @@
 # PDF-Compare
 
-A powerful tool for comparing PDF files. Generates visual side-by-side comparison reports with content-aware highlighting.
+A powerful tool for comparing PDF files. Generates vector-based side-by-side comparison reports with content-aware highlighting.
 
 <a href="https://www.buymeacoffee.com/grananda" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## Features
 
+- **Vector-Based Rendering**: Preserves text quality and keeps file sizes small (no image conversion)
+- **Searchable Output**: Generated PDFs maintain searchable, selectable text
 - **Visual Comparison**: Side-by-side view of two PDFs with intelligent page alignment
 - **Content-Aware Highlighting**: Detects text changes based on content, ignoring layout shifts
 - **Smart Page Alignment**: Automatically detects inserted/deleted pages
@@ -43,27 +45,7 @@ brew install python@3.12
 sudo apt install python3.12 python3.12-venv
 ```
 
-#### Poppler
-
-Poppler is required for PDF to image conversion.
-
-**Windows:**
-1. Download from [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases/)
-2. Extract and add `Library\bin` folder to your PATH
-
-**macOS:**
-```bash
-brew install poppler
-```
-
-**Linux:**
-```bash
-# Ubuntu/Debian
-sudo apt install poppler-utils
-
-# Fedora
-sudo dnf install poppler-utils
-```
+**Note:** No additional dependencies (like Poppler) are required. PyMuPDF handles all PDF operations natively.
 
 ## Quick Start
 
@@ -178,9 +160,7 @@ Check if all dependencies are installed and configured.
 {
     ready: boolean;
     python: boolean;
-    poppler: boolean;
     pythonPath: string | null;
-    popplerPath: string | null;
 }
 ```
 
@@ -207,11 +187,12 @@ Get the package version.
 
 ## How It Works
 
-1. **Text Extraction**: Extracts text from each page of both PDFs
+1. **Text Extraction**: Extracts text and layout information from each page using PyMuPDF
 2. **Similarity Scoring**: Calculates similarity between pages using sequence matching
 3. **Smart Alignment**: Detects insertions, deletions, and shifts between documents
-4. **Visual Highlighting**: Highlights text differences within aligned pages
-5. **Report Generation**: Creates a side-by-side PDF report
+4. **Vector-Based Report**: Creates a new PDF that preserves the original vector content
+5. **Visual Highlighting**: Adds vector-based highlights over text differences (no rasterization)
+6. **Optimized Output**: Maintains searchable text and small file sizes
 
 ### Example: Inserted Page
 
@@ -263,11 +244,16 @@ After installing Python, run:
 npx pdf-compare --setup
 ```
 
-### Poppler not found
+### Dependencies not found
 
-Install Poppler for your platform (see Prerequisites above), then verify:
+Verify Python dependencies are installed:
 ```bash
 npx pdf-compare --check
+```
+
+If needed, reinstall:
+```bash
+npx pdf-compare --setup
 ```
 
 ### Permission errors on Linux/macOS
