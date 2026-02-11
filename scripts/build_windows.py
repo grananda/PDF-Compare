@@ -6,10 +6,7 @@ Usage:
     uv run python scripts/build_windows.py
 
 This creates a standalone .exe file in the dist/ folder that can be
-distributed to users without requiring Python or Poppler installation.
-
-Before building, run:
-    uv run python scripts/download_poppler.py
+distributed to users without requiring Python installation.
 """
 
 import os
@@ -28,20 +25,7 @@ def main():
     print("=" * 60)
     print("PDF Compare - Windows Executable Builder")
     print("=" * 60)
-
-    # Check for Poppler
-    poppler_dir = project_root / "vendor" / "poppler"
-    poppler_bin = poppler_dir / "Library" / "bin"
-    has_poppler = poppler_bin.exists() and (poppler_bin / "pdftoppm.exe").exists()
-
-    if has_poppler:
-        print(f"\n[OK] Poppler found at: {poppler_dir}")
-    else:
-        print(f"\n[!] Poppler NOT found at: {poppler_dir}")
-        print("\nTo create a fully standalone executable, first download Poppler:")
-        print("    uv run python scripts/download_poppler.py")
-        print("\nContinuing without bundled Poppler...")
-        print("(Users will need to install Poppler separately)")
+    print("\nUsing PyMuPDF for vector-based PDF processing (no external dependencies needed)")
 
     # Clean previous builds
     print("\n[1/4] Cleaning previous builds...")
@@ -69,21 +53,13 @@ def main():
         "--add-data=python/compare_pdf.py;python",
     ]
 
-    # Add Poppler if available
-    if has_poppler:
-        # Include the entire poppler directory
-        pyinstaller_args.append(f"--add-data={poppler_dir};poppler")
-        print(f"  Including Poppler binaries")
-
     # Hidden imports that PyInstaller might miss
     hidden_imports = [
+        "customtkinter",
+        "fitz",
+        "pymupdf",
         "PIL",
         "PIL.Image",
-        "customtkinter",
-        "cv2",
-        "numpy",
-        "pdf2image",
-        "pdfplumber",
     ]
 
     for imp in hidden_imports:
@@ -136,13 +112,8 @@ def main():
         print("  1. Double-click to run")
         print("  2. Create a desktop shortcut")
         print("  3. Distribute to users")
-
-        if has_poppler:
-            print("\n[OK] Poppler is bundled - fully standalone!")
-            print("    Users do NOT need to install anything.")
-        else:
-            print("\n[!] Poppler NOT bundled")
-            print("    Users need to install Poppler separately.")
+        print("\n[OK] Fully standalone - no external dependencies required!")
+        print("    Users do NOT need to install Python or any other tools.")
     else:
         print("\nError: Executable not found after build")
         sys.exit(1)
