@@ -73,7 +73,7 @@ const pdfCompare = require('pdf-compare');
 // Check if dependencies are ready
 const status = pdfCompare.checkDependencies();
 console.log(status);
-// { ready: true, python: true, venv: true, pythonPath: '...', popplerPath: null }
+// { ready: true, python: true, venv: true, pythonPath: '...' }
 
 // Compare PDFs
 async function compare() {
@@ -162,9 +162,7 @@ Check if all dependencies are installed and configured.
     ready: boolean;
     python: boolean;
     venv: boolean;
-    poppler: boolean;
     pythonPath: string | null;
-    popplerPath: string | null;
 }
 ```
 
@@ -232,7 +230,6 @@ pdf-compare/
 │   └── modified_removed_page.pdf
 ├── types/
 │   └── index.d.ts          # TypeScript definitions
-├── Containerfile           # Docker/Podman build
 ├── package.json            # npm configuration
 └── pyproject.toml          # Python dependencies (dev)
 ```
@@ -297,41 +294,6 @@ npm run compare -- a.pdf b.pdf -o output.pdf  # Compare any PDFs
 - `sample-files/modified.pdf` - Document with text changes
 - `sample-files/modified_extra_page.pdf` - Document with added page
 - `sample-files/modified_removed_page.pdf` - Document with removed page
-
-### Docker
-
-Run PDF comparisons in a container without installing dependencies locally.
-
-**Build:**
-```bash
-# Docker
-docker build -f Containerfile -t pdf-compare .
-
-# Podman
-podman build -t pdf-compare .
-```
-
-**Run comparison:**
-```bash
-# Docker (Linux/macOS)
-docker run --rm -v "$(pwd):/data" pdf-compare /data/original.pdf /data/modified.pdf -o /data/report.pdf
-
-# Docker (Windows PowerShell)
-docker run --rm -v "${PWD}:/data" pdf-compare /data/original.pdf /data/modified.pdf -o /data/report.pdf
-
-# Podman (Linux with SELinux)
-podman run --rm -v "$(pwd):/data:Z" pdf-compare /data/original.pdf /data/modified.pdf -o /data/report.pdf
-```
-
-**Build arguments:**
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `PYTHON_VERSION` | 3.12 | Python version to use |
-| `UID` | 1000 | User ID for non-root user |
-| `GID` | 1000 | Group ID for non-root user |
-
-**Note:** On SELinux systems (Fedora, RHEL), use `:Z` flag when mounting volumes.
 
 ### GUI Application
 
