@@ -12,12 +12,8 @@ export interface DependencyStatus {
     python: boolean;
     /** Whether virtual environment exists */
     venv: boolean;
-    /** Whether Poppler is available */
-    poppler: boolean;
     /** Path to Python executable (null if not configured) */
     pythonPath: string | null;
-    /** Path to Poppler binaries (null if not found) */
-    popplerPath: string | null;
 }
 
 /**
@@ -80,11 +76,6 @@ export interface SetupResult {
     venvPath: string;
     /** Path to Python executable in venv */
     pythonPath: string;
-    /** Poppler availability status */
-    poppler: {
-        available: boolean;
-        path: string | null;
-    };
 }
 
 /**
@@ -181,15 +172,3 @@ export function setup(options?: SetupOptions): Promise<SetupResult>;
  * Check setup status (alias for checkDependencies)
  */
 export function checkSetup(): DependencyStatus;
-
-/**
- * Check Poppler availability
- *
- * @returns Object with available boolean and path
- */
-export function checkPoppler(): { available: boolean; path: string | null };
-
-/**
- * Print Poppler installation instructions to console
- */
-export function printPopplerInstructions(): void;

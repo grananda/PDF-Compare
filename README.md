@@ -212,17 +212,9 @@ pdf-compare/
 │   ├── python-bridge.js    # Python subprocess handling
 │   └── setup.js            # Environment setup
 ├── python/
-│   ├── comparator.py       # Core comparison logic
-│   ├── compare_pdf.py      # Python CLI
-│   ├── config.py           # Configuration (legacy params)
-│   ├── main.py             # GUI application
-│   └── requirements.txt    # Python dependencies (npm)
+│   └── requirements.txt    # Python dependencies (py-pdf-compare)
 ├── scripts/
-│   ├── postinstall.js      # Auto-setup on npm install
-│   ├── build_windows.py    # Build Windows executable
-│   ├── build_linux.py      # Build Linux executable
-│   ├── build_macos.py      # Build macOS application
-│   └── pyinstaller_hooks/  # Runtime hooks for PyInstaller
+│   └── postinstall.js      # Auto-setup on npm install
 ├── sample-files/           # Test PDFs for development
 │   ├── original.pdf
 │   ├── modified.pdf
@@ -230,8 +222,7 @@ pdf-compare/
 │   └── modified_removed_page.pdf
 ├── types/
 │   └── index.d.ts          # TypeScript definitions
-├── package.json            # npm configuration
-└── pyproject.toml          # Python dependencies (dev)
+└── package.json            # npm configuration
 ```
 
 ## Troubleshooting
@@ -294,25 +285,6 @@ npm run compare -- a.pdf b.pdf -o output.pdf  # Compare any PDFs
 - `sample-files/modified.pdf` - Document with text changes
 - `sample-files/modified_extra_page.pdf` - Document with added page
 - `sample-files/modified_removed_page.pdf` - Document with removed page
-
-### GUI Application
-
-```bash
-uv run python python/main.py
-```
-
-### Desktop Executables
-
-```bash
-# Build Windows executable
-uv run python scripts/build_windows.py
-
-# Build Linux executable
-uv run python scripts/build_linux.py
-
-# Build macOS application
-uv run python scripts/build_macos.py
-```
 
 ## License
 

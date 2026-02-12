@@ -9,10 +9,6 @@ jobs:
   check-versions:
     runs-on: ubuntu-latest
     outputs:
-      # Python/Binary version
-      bin_version: ${{ steps.get_bin_version.outputs.version }}
-      should_release_bin: ${{ steps.check_bin_tag.outputs.should_release }}
-      # NPM version
       npm_version: ${{ steps.get_npm_version.outputs.version }}
       should_publish_npm: ${{ steps.check_npm_tag.outputs.should_publish }}
 
@@ -22,31 +18,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Binary version from pyproject.toml
-      - name: Get binary version from pyproject.toml
-        id: get_bin_version
-        run: |
-          VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Binary version: $VERSION"
-
-      - name: Check if binary tag exists
-        id: check_bin_tag
-        run: |
-          if git rev-parse "v${{ steps.get_bin_version.outputs.version }}" >/dev/null 2>&1; then
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.get_bin_version.outputs.version }} already exists"
-          else
-            if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
-              echo "should_release=true" >> $GITHUB_OUTPUT
-              echo "Tag v${{ steps.get_bin_version.outputs.version }} does not exist - will create release"
-            else
-              echo "should_release=false" >> $GITHUB_OUTPUT
-              echo "Not on main branch push - skipping binary release"
-            fi
-          fi
-
-      # NPM version from package.json
       - name: Get npm version from package.json
         id: get_npm_version
         run: |
@@ -86,148 +57,6 @@ jobs:
           echo "Verifying npm authentication..."
           npm whoami
           echo "npm token is valid"
-
-  build:
-    needs: check-versions
-    if: needs.check-versions.outputs.should_release_bin == 'true' || github.event_name == 'workflow_dispatch'
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            name: Linux
-            artifact_name: pdf-compare
-            artifact_path: dist/pdf-compare
-            build_script: scripts/build_linux.py
-          - os: macos-latest
-            name: macOS-ARM
-            artifact_name: PDF-Compare-macOS-ARM
-            artifact_path: dist/PDF-Compare-macOS-ARM.dmg
-            build_script: scripts/build_macos.py
-          - os: windows-latest
-            name: Windows
-            artifact_name: PDF-Compare.exe
-            artifact_path: dist/PDF Compare.exe
-            build_script: scripts/build_windows.py
-
-    runs-on: ${{ matrix.os }}
-    name: Build ${{ matrix.name }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-
-      - name: Set up Python
-        run: uv python install 3.12
-
-      - name: Install dependencies
-        run: uv sync --all-groups
-
-      # Linux: Install Poppler
-      - name: Install Poppler (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y poppler-utils
-
-      # macOS: Install Poppler and create-dmg via Homebrew
-      - name: Install Poppler and create-dmg (macOS)
-        if: startsWith(matrix.os, 'macos')
-        run: brew install poppler create-dmg
-
-      # Windows: Download Poppler
-      - name: Install Poppler (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          $poppler_version = "24.08.0"
-          $poppler_url = "https://github.com/oschwartz10612/poppler-windows/releases/download/v$poppler_version-0/Release-$poppler_version-0.zip"
-          Invoke-WebRequest -Uri $poppler_url -OutFile poppler.zip
-          Expand-Archive -Path poppler.zip -DestinationPath vendor
-          Rename-Item -Path "vendor/poppler-$poppler_version" -NewName "poppler"
-
-      - name: Build executable
-        run: uv run python ${{ matrix.build_script }}
-
-      # macOS: Create DMG from app bundle
-      - name: Create DMG (macOS)
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          create-dmg \
-            --volname "PDF Compare" \
-            --window-pos 200 120 \
-            --window-size 600 400 \
-            --icon-size 100 \
-            --icon "PDF Compare.app" 150 185 \
-            --hide-extension "PDF Compare.app" \
-            --app-drop-link 450 185 \
-            "${{ matrix.artifact_path }}" \
-            "dist/PDF Compare.app"
-
-      # Upload artifact
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_path }}
-          if-no-files-found: error
-
-  release-binaries:
-    needs: [check-versions, build]
-    runs-on: ubuntu-latest
-    if: needs.check-versions.outputs.should_release_bin == 'true'
-
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Debug - List artifacts structure
-        run: |
-          echo "=== Artifacts structure ==="
-          find artifacts -type f -o -type d | head -100
-          echo "==========================="
-
-      - name: Prepare release assets
-        run: |
-          mkdir -p release
-
-          # Linux binary
-          cp artifacts/pdf-compare/pdf-compare release/pdf-compare-linux
-          chmod +x release/pdf-compare-linux
-
-          # Windows executable
-          cp artifacts/PDF-Compare.exe/PDF\ Compare.exe release/PDF-Compare-windows.exe
-
-          # macOS DMG (ARM/Apple Silicon)
-          cp artifacts/PDF-Compare-macOS-ARM/PDF-Compare-macOS-ARM.dmg release/PDF-Compare-macOS-ARM.dmg
-
-      - name: Create tag and release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          VERSION="v${{ needs.check-versions.outputs.bin_version }}"
-
-          git tag "$VERSION"
-          git push origin "$VERSION"
-
-          gh release create "$VERSION" \
-            release/pdf-compare-linux \
-            release/PDF-Compare-windows.exe \
-            release/PDF-Compare-macOS-ARM.dmg \
-            --title "$VERSION" \
-            --generate-notes
 
   publish-npm:
     needs: check-versions

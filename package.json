@@ -1,6 +1,6 @@
 {
   "name": "pdf-compare",
-  "version": "2026.2.2",
+  "version": "2026.2.3",
   "description": "Compare two PDF files and generate a visual diff report with highlighted differences",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
@@ -18,8 +18,6 @@
   },
   "files": [
     "lib/",
-    "python/comparator.py",
-    "python/compare_pdf.py",
     "python/requirements.txt",
     "scripts/postinstall.js",
     "types/",
