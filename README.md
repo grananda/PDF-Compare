@@ -45,7 +45,7 @@ brew install python@3.12
 sudo apt install python3.12 python3.12-venv
 ```
 
-**Note:** No additional dependencies (like Poppler) are required. PyMuPDF handles all PDF operations natively.
+**Note:** No additional dependencies are required. PyMuPDF handles all PDF operations natively.
 
 ## Quick Start
 
@@ -73,7 +73,7 @@ const pdfCompare = require('pdf-compare');
 // Check if dependencies are ready
 const status = pdfCompare.checkDependencies();
 console.log(status);
-// { ready: true, python: true, poppler: true, ... }
+// { ready: true, python: true, venv: true, pythonPath: '...' }
 
 // Compare PDFs
 async function compare() {
@@ -121,6 +121,7 @@ Compare two PDF files and generate a visual diff report.
 - `options` (object, optional):
   - `timeout` (number): Timeout in ms (default: 120000)
   - `pythonPath` (string): Custom Python path
+  - `cwd` (string): Working directory for Python execution
 
 **Returns:** `Promise<CompareResult>`
 ```typescript
@@ -134,11 +135,11 @@ Compare two PDF files and generate a visual diff report.
 
 ### `comparePDFsFromBuffer(bufferA, bufferB, options?)`
 
-Compare PDFs from Buffer data (useful for streams/uploads).
+Compare PDFs from Uint8Array data (useful for streams/uploads).
 
 **Parameters:**
-- `bufferA` (Buffer): First PDF as Buffer
-- `bufferB` (Buffer): Second PDF as Buffer
+- `bufferA` (Uint8Array): First PDF as Uint8Array
+- `bufferB` (Uint8Array): Second PDF as Uint8Array
 - `options` (object, optional): Same as `comparePDFs`
 
 **Returns:** `Promise<CompareBufferResult>`
@@ -146,7 +147,7 @@ Compare PDFs from Buffer data (useful for streams/uploads).
 {
     success: boolean;
     pageCount: number | null;
-    reportBuffer: Buffer | null;
+    reportBuffer: Uint8Array | null;
     output: string;
 }
 ```
@@ -160,6 +161,7 @@ Check if all dependencies are installed and configured.
 {
     ready: boolean;
     python: boolean;
+    venv: boolean;
     pythonPath: string | null;
 }
 ```
@@ -212,12 +214,15 @@ pdf-compare/
 ├── python/
 │   ├── comparator.py       # Core comparison logic
 │   ├── compare_pdf.py      # Python CLI
+│   ├── config.py           # Configuration (legacy params)
 │   ├── main.py             # GUI application
 │   └── requirements.txt    # Python dependencies (npm)
 ├── scripts/
 │   ├── postinstall.js      # Auto-setup on npm install
 │   ├── build_windows.py    # Build Windows executable
-│   └── download_poppler.py # Download Poppler for Windows
+│   ├── build_linux.py      # Build Linux executable
+│   ├── build_macos.py      # Build macOS application
+│   └── pyinstaller_hooks/  # Runtime hooks for PyInstaller
 ├── sample-files/           # Test PDFs for development
 │   ├── original.pdf
 │   ├── modified.pdf
@@ -225,7 +230,6 @@ pdf-compare/
 │   └── modified_removed_page.pdf
 ├── types/
 │   └── index.d.ts          # TypeScript definitions
-├── Containerfile           # Docker/Podman build
 ├── package.json            # npm configuration
 └── pyproject.toml          # Python dependencies (dev)
 ```
@@ -291,62 +295,28 @@ npm run compare -- a.pdf b.pdf -o output.pdf  # Compare any PDFs
 - `sample-files/modified_extra_page.pdf` - Document with added page
 - `sample-files/modified_removed_page.pdf` - Document with removed page
 
-### Docker
-
-Run PDF comparisons in a container without installing dependencies locally.
-
-**Build:**
-```bash
-# Docker
-docker build -f Containerfile -t pdf-compare .
-
-# Podman
-podman build -t pdf-compare .
-```
-
-**Run comparison:**
-```bash
-# Docker (Linux/macOS)
-docker run --rm -v "$(pwd):/data" pdf-compare /data/original.pdf /data/modified.pdf -o /data/report.pdf
-
-# Docker (Windows PowerShell)
-docker run --rm -v "${PWD}:/data" pdf-compare /data/original.pdf /data/modified.pdf -o /data/report.pdf
-
-# Podman (Linux with SELinux)
-podman run --rm -v "$(pwd):/data:Z" pdf-compare /data/original.pdf /data/modified.pdf -o /data/report.pdf
-```
-
-**Build arguments:**
-
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `PYTHON_VERSION` | 3.12 | Python version to use |
-| `UID` | 1000 | User ID for non-root user |
-| `GID` | 1000 | Group ID for non-root user |
-
-**Note:** On SELinux systems (Fedora, RHEL), use `:Z` flag when mounting volumes.
-
 ### GUI Application
 
 ```bash
 uv run python python/main.py
 ```
 
-### Windows Executable
+### Desktop Executables
 
 ```bash
-# Download Poppler (one-time)
-uv run python scripts/download_poppler.py
-
-# Build executable
+# Build Windows executable
 uv run python scripts/build_windows.py
 
-# Result: dist/PDF Compare.exe
+# Build Linux executable
+uv run python scripts/build_linux.py
+
+# Build macOS application
+uv run python scripts/build_macos.py
 ```
 
 ## License
 
-[MIT](LICENSE)
+[GPL-3.0](LICENSE)
 
 ## Contributing
 
