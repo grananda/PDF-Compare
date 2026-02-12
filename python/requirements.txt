@@ -1,3 +1,3 @@
 # PDF-Compare Core Dependencies
-# Vector-based PDF comparison using PyMuPDF
-pymupdf>=1.26.7
+# Vector-based PDF comparison using py-pdf-compare
+py-pdf-compare>=2026.2.3
