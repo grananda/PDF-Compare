@@ -7,10 +7,9 @@
  * 1. Detect Python 3.12+
  * 2. Create a virtual environment
  * 3. Install Python dependencies
- * 4. Check for Poppler availability
  */
 
-const { setup, checkPoppler, printPopplerInstructions, MIN_PYTHON_VERSION } = require('../lib/setup');
+const { setup, MIN_PYTHON_VERSION } = require('../lib/setup');
 
 // Skip setup in CI environments if configured
 const SKIP_SETUP = process.env.PDF_COMPARE_SKIP_SETUP === '1' ||
@@ -26,16 +25,10 @@ async function postinstall() {
     }
 
     try {
-        const result = await setup({ quiet: false });
+        await setup({ quiet: false });
 
         console.log('\n✅ pdf-compare setup complete!\n');
-
-        if (!result.poppler.available) {
-            console.log('⚠️  Note: Poppler is required for PDF comparison to work.');
-            console.log('   Install Poppler before using pdf-compare.\n');
-        } else {
-            console.log('🎉 Ready to use! Try: npx pdf-compare --help\n');
-        }
+        console.log('🎉 Ready to use! Try: npx pdf-compare --help\n');
 
     } catch (error) {
         console.error('\n❌ Setup failed:', error.message);
