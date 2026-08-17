@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Requisitos — PDF-Compare (paquete npm)</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fa; --panel: #ffffff; --panel-soft: #fbfcfd;
+      --text: #1a2230; --text-soft: #404a5c; --muted: #5b6675;
+      --line: #e1e6ed; --line-strong: #c8d1dc;
+      --accent: #005f73; --accent-soft: #d6eef3;
+      --code-bg: #eef2f6;
+      --shadow: 0 1px 2px rgba(15,23,42,.04), 0 1px 3px rgba(15,23,42,.06);
+      --rf: #0a7d8c; --nfr: #6b5bd6; --us: #0a9396; --must: #c1121f;
+      --block: #b00020; --warn: #b58a25; --essential: #e8590c;
+      --prio-high: #c1121f; --prio-mid: #d98a00; --prio-low: #4a8a4a;
+      --eff-xs: #2f8f6b; --eff-s: #4a8a4a; --eff-m: #d98a00; --eff-l: #c1121f; --eff-xl: #7a0a15;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { 
+        --bg: #0f1623; --panel: #161f2f; --panel-soft: #1b2536;
+        --text: #e6ebf4; --text-soft: #c2cad8; --muted: #94a0b3;
+        --line: #28324a; --line-strong: #364260;
+        --accent: #4dd0e1; --accent-soft: #143038; --code-bg: #1f2940;
+        --shadow: 0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.25);
+        --rf: #35c4d6; --nfr: #a99bff; --us: #4dd0e1; --must: #ff6b74;
+        --block: #ff7a8a; --warn: #f6d784; --essential: #ff8f4d;
+        --prio-high: #ff6b74; --prio-mid: #ffb340; --prio-low: #7fd07f;
+        --eff-xs: #5fd0a8; --eff-s: #7fd07f; --eff-m: #ffb340; --eff-l: #ff6b74; --eff-xl: #ff9aa2;
+ }
+    }
+    :root[data-theme="dark"] { 
+        --bg: #0f1623; --panel: #161f2f; --panel-soft: #1b2536;
+        --text: #e6ebf4; --text-soft: #c2cad8; --muted: #94a0b3;
+        --line: #28324a; --line-strong: #364260;
+        --accent: #4dd0e1; --accent-soft: #143038; --code-bg: #1f2940;
+        --shadow: 0 1px 2px rgba(0,0,0,.35), 0 1px 3px rgba(0,0,0,.25);
+        --rf: #35c4d6; --nfr: #a99bff; --us: #4dd0e1; --must: #ff6b74;
+        --block: #ff7a8a; --warn: #f6d784; --essential: #ff8f4d;
+        --prio-high: #ff6b74; --prio-mid: #ffb340; --prio-low: #7fd07f;
+        --eff-xs: #5fd0a8; --eff-s: #7fd07f; --eff-m: #ffb340; --eff-l: #ff6b74; --eff-xl: #ff9aa2;
+ }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    }
+    .layout {
+      display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px;
+      max-width: 1280px; margin: 0 auto; padding: 40px 28px 80px;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; padding: 24px 18px 56px; gap: 24px; }
+      .toc { position: static !important; max-height: none !important; }
+    }
+    main { min-width: 0; }
+    .doc-header { margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 10px; letter-spacing: -0.01em; }
+    h2 { font-size: 1.35rem; line-height: 1.3; margin: 0 0 14px; display: flex; align-items: baseline; gap: 8px; }
+    h3 { font-size: 1.08rem; margin: 22px 0 10px; }
+    h4 { font-size: .98rem; margin: 18px 0 8px; color: var(--text-soft); text-transform: uppercase; letter-spacing: .04em; }
+    h2 .anchor { color: var(--line-strong); text-decoration: none; font-weight: 400; opacity: 0; transition: opacity .15s ease, color .15s ease; }
+    h2:hover .anchor { opacity: 1; }
+    h2 .anchor:hover { color: var(--accent); }
+    p { margin: 0 0 14px; color: var(--text-soft); max-width: 74ch; }
+    li { color: var(--text-soft); }
+    ul, ol { padding-left: 24px; margin: 0 0 16px; }
+    ul li, ol li { margin-bottom: 6px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { color: var(--text); }
+    blockquote {
+      margin: 0 0 16px; padding: 12px 16px; border-left: 3px solid var(--accent);
+      background: var(--panel-soft); border-radius: 0 8px 8px 0; color: var(--muted); font-size: .95rem;
+    }
+    code { background: var(--code-bg); border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px;
+      font-family: "SF Mono","JetBrains Mono","Fira Code",Consolas,Menlo,monospace; font-size: .88em; }
+    pre { background: var(--panel-soft); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px;
+      overflow-x: auto; font-family: "SF Mono","JetBrains Mono","Fira Code",Consolas,Menlo,monospace; font-size: .88em; line-height: 1.55; }
+    pre code { background: transparent; border: 0; padding: 0; }
+    .badge { display: inline-block; background: var(--accent-soft); color: var(--accent);
+      font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+      padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+    .badge-soft { background: transparent; border: 1px solid var(--line-strong); color: var(--muted); }
+    .doc-meta { margin: 0; color: var(--muted); font-size: .92rem; }
+    .doc-meta .dot { margin: 0 6px; color: var(--line-strong); }
+    .doc-meta .sot { font-style: italic; }
+    .doc-meta .stamp strong { color: var(--accent); }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+    li.task { list-style: none; margin-left: -20px; }
+    li.task input { accent-color: var(--accent); margin-right: 6px; vertical-align: -.1em; }
+    .theme-toggle { position: fixed; top: 14px; right: 16px; z-index: 10;
+      width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line-strong);
+      background: var(--panel); color: var(--text-soft); font-size: 1rem; cursor: pointer;
+      box-shadow: var(--shadow); line-height: 1; }
+    .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+    .diagram.offline::after { content: "Diagrama Mermaid sin renderizar (falta mermaid.min.js junto al HTML y la CDN no responde; el codigo fuente se muestra arriba)";
+      display: block; margin-top: 10px; font-size: .8rem; color: var(--warn); }
+    /* KPI dashboard */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-top: 20px; }
+    .kpi { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+      border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 2px; }
+    .kpi-value { font-size: 1.9rem; font-weight: 700; line-height: 1; letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+    .kpi-label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .kpi-rf { border-left-color: var(--rf); } .kpi-rf .kpi-value { color: var(--rf); }
+    .kpi-nfr { border-left-color: var(--nfr); } .kpi-nfr .kpi-value { color: var(--nfr); }
+    .kpi-us { border-left-color: var(--us); } .kpi-us .kpi-value { color: var(--us); }
+    .kpi-must { border-left-color: var(--must); } .kpi-must .kpi-value { color: var(--must); }
+    .kpi-block { border-left-color: var(--block); } .kpi-block .kpi-value { color: var(--block); }
+    .kpi-essential { border-left-color: var(--essential); } .kpi-essential .kpi-value { color: var(--essential); }
+    .kpi-warn { border-left-color: var(--warn); } .kpi-warn .kpi-value { color: var(--warn); }
+    .kpi-muted { border-left-color: var(--line-strong); } .kpi-muted .kpi-value { color: var(--muted); }
+    .kpi-eff { border-left-color: var(--eff-m); } .kpi-eff .kpi-value { color: var(--eff-m); }
+    /* Chips */
+    .chip { display: inline-block; font-size: .74rem; font-weight: 600; padding: 1px 8px; border-radius: 999px;
+      vertical-align: baseline; letter-spacing: .02em; white-space: nowrap;
+      border: 1px solid color-mix(in srgb, currentColor 35%, transparent); }
+    .chip-rf { color: var(--rf); background: color-mix(in srgb, var(--rf) 12%, transparent); font-family: "SF Mono",Menlo,monospace; }
+    .chip-nfr { color: var(--nfr); background: color-mix(in srgb, var(--nfr) 12%, transparent); font-family: "SF Mono",Menlo,monospace; }
+    .chip-us { color: var(--us); background: color-mix(in srgb, var(--us) 12%, transparent); font-family: "SF Mono",Menlo,monospace; }
+    .chip-block { color: #fff; background: var(--block); border-color: var(--block); text-transform: uppercase; letter-spacing: .05em; }
+    .chip-essential { color: #fff; background: var(--essential); border-color: var(--essential); text-transform: uppercase; letter-spacing: .05em; }
+    .swatch { display: inline-block; width: .9em; height: .9em; border-radius: 3px; margin-right: .35em;
+      vertical-align: -.12em; border: 1px solid color-mix(in srgb, var(--text) 30%, transparent);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.35) inset; }
+    .chip-must { color: var(--must); background: color-mix(in srgb, var(--must) 14%, transparent); }
+    .chip-should { color: var(--prio-mid); background: color-mix(in srgb, var(--prio-mid) 14%, transparent); }
+    .chip-could { color: var(--prio-low); background: color-mix(in srgb, var(--prio-low) 14%, transparent); }
+    .chip-wont { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, transparent); }
+    .chip-prio-high { color: var(--prio-high); background: color-mix(in srgb, var(--prio-high) 14%, transparent); }
+    .chip-prio-mid { color: var(--prio-mid); background: color-mix(in srgb, var(--prio-mid) 14%, transparent); }
+    .chip-prio-low { color: var(--prio-low); background: color-mix(in srgb, var(--prio-low) 14%, transparent); }
+    .chip-eff-xs { color: var(--eff-xs); background: color-mix(in srgb, var(--eff-xs) 14%, transparent); }
+    .chip-eff-s { color: var(--eff-s); background: color-mix(in srgb, var(--eff-s) 14%, transparent); }
+    .chip-eff-m { color: var(--eff-m); background: color-mix(in srgb, var(--eff-m) 14%, transparent); }
+    .chip-eff-l { color: var(--eff-l); background: color-mix(in srgb, var(--eff-l) 14%, transparent); }
+    .chip-eff-xl { color: var(--eff-xl); background: color-mix(in srgb, var(--eff-xl) 14%, transparent); }
+    /* Sections */
+    .doc-section { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      padding: 24px 26px; margin: 22px 0; box-shadow: var(--shadow); }
+    .doc-section h2 { margin-top: 0; }
+    .doc-section > h2::before { content: ""; display: inline-block; width: 6px; height: 22px; border-radius: 3px;
+      background: var(--accent); transform: translateY(3px); margin-right: 2px; }
+    .section-scope > h2::before { background: var(--must); }
+    .section-scope ul { list-style: none; padding-left: 0; }
+    .section-scope ul li { padding: 6px 12px; margin-bottom: 6px; border-radius: 8px; background: var(--panel-soft); border: 1px solid var(--line); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); font-size: .94rem; }
+    th, td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; color: var(--text-soft); }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:nth-child(even) td { background: var(--panel-soft); }
+    th { background: var(--panel-soft); color: var(--text); font-weight: 600; font-size: .82rem;
+      text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--line-strong); }
+    .diagram { margin: 18px 0 4px; padding: 18px; background: var(--panel-soft);
+      border: 1px dashed var(--line-strong); border-radius: 10px; overflow-x: auto; }
+    .diagram .mermaid { text-align: center; background: transparent; border: 0; padding: 0; margin: 0; }
+    .toc { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto;
+      padding: 18px 18px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+      box-shadow: var(--shadow); font-size: .9rem; }
+    .toc-title { margin: 0 0 10px; font-size: .74rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .toc ol { list-style: none; counter-reset: toc; padding: 0; margin: 0; }
+    .toc li { counter-increment: toc; margin: 0; }
+    .toc li a { display: block; padding: 6px 10px 6px 12px; color: var(--text-soft); border-radius: 6px; }
+    .toc li a::before { content: counter(toc) "."; color: var(--muted); margin-right: 8px; font-variant-numeric: tabular-nums; }
+    .toc li a:hover, .toc li a.active { background: var(--accent-soft); color: var(--accent); text-decoration: none; }
+    @media print {
+      body { background: #fff; } .layout { display: block; padding: 0; } .toc { display: none; }
+      .doc-section, .kpi { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">&#9681;</button>
+  <div class="layout">
+    <nav class="toc" aria-label="Indice"><p class="toc-title">En esta pagina</p><ol><li><a href="#1-descripci-n-del-sistema-y-objetivos">1. Descripción del sistema y objetivos</a></li><li><a href="#2-usuarios-y-roles">2. Usuarios y roles</a></li><li><a href="#3-requisitos-funcionales">3. Requisitos funcionales</a></li><li><a href="#4-requisitos-no-funcionales">4. Requisitos no funcionales</a></li><li><a href="#5-restricciones-t-cnicas-no-negociables">5. Restricciones técnicas no negociables</a></li><li><a href="#6-alcance">6. Alcance</a></li><li><a href="#7-variables-de-entorno-y-configuraci-n-requerida">7. Variables de entorno y configuración requerida</a></li><li><a href="#8-preguntas-abiertas-y-pendientes">8. Preguntas abiertas y pendientes</a></li><li><a href="#9-decisiones-tomadas-en-el-paso-1-1">9. Decisiones tomadas en el paso 1.1</a></li></ol></nav>
+    <main>
+<header class="doc-header"><h1 id="requisitos-pdf-compare-paquete-npm">Requisitos — PDF-Compare (paquete npm)</h1><p class="doc-meta"><span class="badge">Requisitos</span> <span class="badge badge-soft">Fase 1 · 1.1</span> <span class="dot">&middot;</span> <span class="stamp"><strong>Versión 2</strong> · <strong>Generado:</strong> 2026-08-17 10:46 CEST</span> <span class="dot">&middot;</span> Vista generada el 2026-08-17 <span class="dot">&middot;</span> <span class="sot">El .md es la fuente de verdad</span></p><div class="kpi-grid"><div class="kpi kpi-rf"><span class="kpi-value">32</span><span class="kpi-label">Requisitos funcionales</span></div><div class="kpi kpi-nfr"><span class="kpi-value">15</span><span class="kpi-label">No funcionales</span></div><div class="kpi kpi-muted"><span class="kpi-value">9</span><span class="kpi-label">Fuera de alcance</span></div><div class="kpi kpi-eff"><span class="kpi-value">33 d</span><span class="kpi-label">Esfuerzo estimado (11 items)</span></div><div class="kpi kpi-block"><span class="kpi-value">2</span><span class="kpi-label">Bloqueantes</span></div><div class="kpi kpi-warn"><span class="kpi-value">12</span><span class="kpi-label">Preguntas abiertas</span></div></div></header>
+<blockquote>Documento de Fase 1 (AIDD · paso 1.1). Generado por <code>aidd requirements</code>.<br>Entrada: no existe <code>docs/cliente-requisitos.md</code> — requisitos derivados por ingeniería inversa del código (<code>lib/</code>, <code>scripts/</code>, <code>types/</code>), el <code>README.md</code>, <code>package.json</code> y el workflow de CI. Salida hacia: <code>docs/mapa-historias-usuario.md</code>.<br>Alcance: <strong>estado actual (as-is)</strong>. Este catálogo formaliza lo que el paquete ya hace; toda evolución posterior entra como <em>change</em> de AISDD.<br>Producto hermano: el núcleo de comparación vive en <code>Py-PDF-Compare</code> y tiene su propio catálogo (<code>docs/requisitos.md</code> de ese repositorio). Este documento <strong>no repite</strong> los requisitos del núcleo.<br>Pendiente de aprobación humana.</blockquote>
+<section class="doc-section" id="1-descripci-n-del-sistema-y-objetivos">
+<h2><a class="anchor" href="#1-descripci-n-del-sistema-y-objetivos" aria-label="Enlace">#</a>1. Descripción del sistema y objetivos</h2>
+<p><strong>PDF-Compare (npm)</strong> es un <em>wrapper</em> del paquete Python <code>py-pdf-compare</code> que lleva la comparación visual de documentos PDF al ecosistema Node.js. No implementa comparación: aprovisiona un entorno Python aislado, invoca la CLI del paquete Python como subproceso y traduce su resultado a una API JavaScript/TypeScript y a una CLI de Node.</p>
+<p>Problema que resuelve: un consumidor de Node no debería tener que instalar Python, gestionar un entorno virtual ni conocer la CLI de <code>pdf_compare</code> para comparar dos PDF desde su aplicación o su pipeline. Un <code>npm install pdf-compare</code> debe bastar.</p>
+<p>Objetivos medibles (derivados del comportamiento actual):</p>
+<ul><li><strong>O-1</strong> — Instalación de un solo paso: tras <code>npm install pdf-compare</code> el paquete queda operativo sin intervención manual, siempre que exista Python 3.12+ en el sistema.</li><li><strong>O-2</strong> — Aislamiento total: el paquete no instala nada en el Python del sistema; todas sus dependencias Python viven en un entorno virtual de su propiedad, dentro de <code>node_modules</code>.</li><li><strong>O-3</strong> — Coste de mantenimiento mínimo: el wrapper no duplica lógica de dominio. Toda la comparación (alineado de páginas, resaltado, render vectorial) es responsabilidad de <code>py-pdf-compare</code>.</li><li><strong>O-4</strong> — Cero dependencias npm de terceros: el paquete se apoya únicamente en la biblioteca estándar de Node.</li><li><strong>O-5</strong> — El producto es consumible por tres vías con el mismo núcleo: CLI de Node, API programática CommonJS y tipos TypeScript.</li></ul>
+</section>
+<section class="doc-section" id="2-usuarios-y-roles">
+<h2><a class="anchor" href="#2-usuarios-y-roles" aria-label="Enlace">#</a>2. Usuarios y roles</h2>
+<p>El sistema <strong>no tiene autenticación ni control de acceso</strong>: es una librería local. Los &quot;roles&quot; son perfiles de uso, no permisos.</p>
+<div class="table-wrap"><table><thead><tr><th>Rol</th><th>Descripción</th><th>Interfaz</th><th>Permisos / responsabilidades</th></tr></thead><tbody><tr><td><strong>Desarrollador integrador</strong></td><td>Programador que embebe la comparación en una aplicación Node o TypeScript</td><td>API (<code>require(&#x27;pdf-compare&#x27;)</code>)</td><td>Instala el paquete, invoca la API, gestiona el informe resultante (fichero o memoria)</td></tr><tr><td><strong>Usuario de CLI / automatización</strong></td><td>Persona o script que compara PDF desde terminal o desde un pipeline</td><td>CLI (<code>npx pdf-compare</code>)</td><td>Pasa rutas de entrada y salida, interpreta el código de salida del proceso</td></tr><tr><td><strong>Operador de CI / imágenes</strong></td><td>Responsable de un entorno donde se instala el paquete de forma desatendida</td><td><code>npm install</code>, variables de entorno</td><td>Decide si el aprovisionamiento Python ocurre en instalación o se difiere, y garantiza la presencia de Python 3.12+</td></tr><tr><td><strong>Mantenedor</strong></td><td>Responsable del repositorio y de las publicaciones</td><td>GitHub Actions, npm registry</td><td>Versiona en <code>package.json</code>, sincroniza con la versión de <code>py-pdf-compare</code> y dispara la publicación</td></tr></tbody></table></div>
+</section>
+<section class="doc-section" id="3-requisitos-funcionales">
+<h2><a class="anchor" href="#3-requisitos-funcionales" aria-label="Enlace">#</a>3. Requisitos funcionales</h2>
+<p>Prioridad orientativa: <strong>A</strong> (nuclear, define el producto), <strong>M</strong> (relevante), <strong>B</strong> (accesorio).</p>
+<h3 id="3-1-aprovisionamiento-del-entorno-python">3.1 Aprovisionamiento del entorno Python</h3>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Requisito</th><th>Actor</th><th>Prio</th></tr></thead><tbody><tr><td><span class="chip chip-rf">RF-01</span></td><td>Tras <code>npm install</code>, el paquete debe aprovisionar automáticamente su entorno Python: localizar un intérprete válido, crear el entorno virtual e instalar las dependencias</td><td>Todos</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-02</span></td><td>La detección del intérprete debe recorrer una lista de candidatos propia de cada plataforma y seleccionar el primero que cumpla la versión mínima (3.12), en lugar de asumir un nombre de ejecutable fijo</td><td>Todos</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-03</span></td><td>El entorno virtual debe crearse dentro del propio paquete instalado, de forma que sea propiedad del paquete y desaparezca al desinstalarlo</td><td>Todos</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-04</span></td><td>Las dependencias Python deben instalarse en ese entorno a partir de un fichero de requisitos versionado en el paquete, no de una lista embebida en código</td><td>Mantenedor</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-05</span></td><td>Si ya existe un entorno virtual válido, el aprovisionamiento debe reutilizarlo y no reinstalar nada</td><td>Todos</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-06</span></td><td>Debe existir una reinstalación forzada que elimine el entorno previo y lo recree desde cero</td><td>Desarrollador integrador</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-07</span></td><td>Debe poder omitirse el aprovisionamiento automático durante la instalación mediante una variable de entorno, para entornos desatendidos o de construcción de imágenes</td><td>Operador de CI</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-08</span></td><td>Un fallo del aprovisionamiento <strong>no debe abortar la instalación npm</strong>: el paquete queda instalado y el mensaje de error indica cómo completarlo manualmente</td><td>Todos</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-09</span></td><td>El aprovisionamiento debe poder ejecutarse a posteriori, tanto como ejecutable propio del paquete como mediante una opción de la CLI</td><td>Todos</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-10</span></td><td>El sistema debe poder consultar y reportar el estado del entorno (listo o no, y ruta del intérprete resuelto) tanto desde la CLI como desde la API</td><td>Todos</td><td>A</td></tr></tbody></table></div>
+<h3 id="3-2-interfaz-de-l-nea-de-comandos-node">3.2 Interfaz de línea de comandos (Node)</h3>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Requisito</th><th>Actor</th><th>Prio</th></tr></thead><tbody><tr><td><span class="chip chip-rf">RF-11</span></td><td>La CLI debe aceptar la ruta del PDF original y del modificado como argumentos posicionales obligatorios</td><td>Usuario de CLI</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-12</span></td><td>La CLI debe permitir indicar la ruta del informe de salida mediante una opción, con un valor por defecto cuando se omite</td><td>Usuario de CLI</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-13</span></td><td>La CLI debe ofrecer ayuda de uso y consulta de versión del paquete</td><td>Usuario de CLI</td><td>B</td></tr><tr><td><span class="chip chip-rf">RF-14</span></td><td>La CLI debe validar que ambos ficheros de entrada existen <strong>antes</strong> de arrancar el subproceso Python, y terminar con error y mensaje explícito si alguno falta</td><td>Usuario de CLI</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-15</span></td><td>La CLI debe verificar que el entorno Python está listo antes de comparar y, si no lo está, abortar mostrando el estado y la acción correctora</td><td>Usuario de CLI</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-16</span></td><td>Al terminar, la CLI debe distinguir explícitamente el caso &quot;no hay diferencias&quot; del caso &quot;informe generado&quot;, indicando en este último el número de páginas y la ruta del informe</td><td>Usuario de CLI</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-17</span></td><td>Ante cualquier fallo, la CLI debe informar del error y terminar con código de salida distinto de cero, para poder encadenarse en scripts</td><td>Usuario de CLI</td><td>A</td></tr></tbody></table></div>
+<h3 id="3-3-api-program-tica-node-typescript">3.3 API programática (Node / TypeScript)</h3>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Requisito</th><th>Actor</th><th>Prio</th></tr></thead><tbody><tr><td><span class="chip chip-rf">RF-18</span></td><td>La API debe exponer una comparación por rutas de fichero que resuelva las rutas a absolutas y cree el directorio de salida si no existe</td><td>Desarrollador integrador</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-19</span></td><td>La API debe exponer una comparación en memoria que acepte los dos documentos como datos binarios y devuelva el informe también como datos binarios, sin exigir al consumidor gestionar ficheros temporales</td><td>Desarrollador integrador</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-20</span></td><td>La comparación en memoria debe eliminar siempre sus ficheros temporales, incluso cuando la comparación falla</td><td>Desarrollador integrador</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-21</span></td><td>Cada invocación debe admitir opciones propias: tiempo máximo de ejecución, intérprete Python alternativo y directorio de trabajo</td><td>Desarrollador integrador</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-22</span></td><td>Vencido el tiempo máximo, el sistema debe terminar el subproceso Python — con terminación forzada si no responde — y rechazar la operación con un error de expiración</td><td>Desarrollador integrador</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-23</span></td><td>El resultado debe distinguir tres desenlaces: comparación con diferencias (informe y número de páginas), comparación sin diferencias (sin informe) y error (excepción con el código de salida y la salida completa del proceso)</td><td>Desarrollador integrador</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-24</span></td><td>El sistema debe informar del número de páginas del informe generado. Este dato es <strong>best-effort</strong>: si no puede obtenerse, la comparación sigue considerándose correcta</td><td>Desarrollador integrador</td><td>B</td></tr><tr><td><span class="chip chip-rf">RF-25</span></td><td>La API debe exponer la versión del paquete y el estado de dependencias como funciones consultables</td><td>Desarrollador integrador</td><td>B</td></tr><tr><td><span class="chip chip-rf">RF-26</span></td><td>Toda la superficie pública debe estar descrita en definiciones TypeScript distribuidas con el paquete</td><td>Desarrollador integrador</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-32</span></td><td>Antes de comparar, el sistema debe eliminar cualquier informe previo existente en la ruta de salida, de modo que la ausencia del fichero al terminar sea una señal fiable de &quot;sin diferencias&quot;</td><td>Desarrollador integrador</td><td>A</td></tr></tbody></table></div>
+<h3 id="3-4-empaquetado-y-distribuci-n-npm">3.4 Empaquetado y distribución npm</h3>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Requisito</th><th>Actor</th><th>Prio</th></tr></thead><tbody><tr><td><span class="chip chip-rf">RF-27</span></td><td>El proyecto debe publicarse en el registro npm como paquete público, declarando dos ejecutables: la CLI de comparación y el aprovisionamiento del entorno</td><td>Mantenedor</td><td>A</td></tr><tr><td><span class="chip chip-rf">RF-28</span></td><td>El tarball publicado debe contener únicamente lo necesario en tiempo de ejecución: código de la librería, fichero de requisitos, script de instalación, tipos, README y licencia</td><td>Mantenedor</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-29</span></td><td>La publicación debe dispararse automáticamente al integrar en la rama principal una versión no publicada, y ser idempotente: una versión ya etiquetada no vuelve a publicarse</td><td>Mantenedor</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-30</span></td><td>La publicación debe incluir procedencia verificable (<em>provenance</em>) y asignar la etiqueta de distribución en función de la versión: preliberaciones fuera del canal estable</td><td>Mantenedor</td><td><span class="chip chip-eff-m">M</span></td></tr><tr><td><span class="chip chip-rf">RF-31</span></td><td>El paquete debe declarar sus plataformas soportadas y su versión mínima de Node, para que npm rechace instalaciones incompatibles</td><td>Mantenedor</td><td>B</td></tr></tbody></table></div>
+</section>
+<section class="doc-section" id="4-requisitos-no-funcionales">
+<h2><a class="anchor" href="#4-requisitos-no-funcionales" aria-label="Enlace">#</a>4. Requisitos no funcionales</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Requisito</th><th>Categoría</th><th>Verificación</th></tr></thead><tbody><tr><td><span class="chip chip-nfr">NFR-01</span></td><td>El paquete no debe instalar ni modificar nada en el Python del sistema; toda dependencia Python queda confinada en su entorno virtual</td><td>Aislamiento</td><td>Instalación en un sistema con Python limpio y comprobación de los paquetes globales</td></tr><tr><td><span class="chip chip-nfr">NFR-02</span></td><td>El wrapper no debe tener dependencias npm de terceros en tiempo de ejecución: solo biblioteca estándar de Node</td><td>Cadena de suministro</td><td><code>npm ls --prod</code> sobre una instalación limpia</td></tr><tr><td><span class="chip chip-nfr">NFR-03</span></td><td>El paquete debe funcionar en Windows, macOS y Linux, resolviendo por plataforma las rutas del entorno virtual y la necesidad de intermediar un shell al lanzar el subproceso</td><td>Portabilidad</td><td>Instalación y comparación en las tres plataformas</td></tr><tr><td><span class="chip chip-nfr">NFR-04</span></td><td>El paquete debe funcionar sobre la versión mínima de Node declarada</td><td>Compatibilidad</td><td>Instalación y ejecución sobre esa versión exacta</td></tr><tr><td><span class="chip chip-nfr">NFR-05</span></td><td>El paquete debe funcionar sobre Python 3.12 o superior, y rechazar con mensaje explícito cualquier intérprete inferior</td><td>Compatibilidad</td><td>Ejecución del aprovisionamiento con un Python 3.11 en el PATH</td></tr><tr><td><span class="chip chip-nfr">NFR-06</span></td><td><code>npm install</code> nunca debe fallar por causa de este paquete: un aprovisionamiento fallido degrada, no rompe (ver <span class="chip chip-rf">RF-08</span>)</td><td>Robustez de instalación</td><td>Instalación en una máquina sin Python</td></tr><tr><td><span class="chip chip-nfr">NFR-07</span></td><td>Todo el procesamiento de documentos debe ser local: el paquete no envía los PDF ni su contenido a ningún servicio externo. El único tráfico de red es la descarga de dependencias durante la instalación</td><td>Privacidad / RGPD</td><td>Ausencia de tráfico de red durante una comparación</td></tr><tr><td><span class="chip chip-nfr">NFR-08</span></td><td>Una comparación no debe dejar residuos: ni proceso Python huérfano tras una expiración, ni ficheros temporales tras una comparación en memoria</td><td>Robustez</td><td>Comparaciones encadenadas y comparaciones interrumpidas por timeout</td></tr><tr><td><span class="chip chip-nfr">NFR-09</span></td><td>La salida completa del subproceso Python (estándar y de error) debe propagarse íntegra al llamante, tanto en éxito como en error</td><td>Diagnosticabilidad</td><td>Provocar un fallo en el núcleo Python y verificar el mensaje recibido</td></tr><tr><td><span class="chip chip-nfr">NFR-10</span></td><td>El wrapper no debe reimplementar lógica de comparación. Toda decisión de dominio (alineado, resaltado, render) permanece en <code>py-pdf-compare</code></td><td>Mantenibilidad</td><td>Revisión de código: ausencia de manipulación de PDF en <code>lib/</code></td></tr><tr><td><span class="chip chip-nfr">NFR-11</span></td><td>Los módulos deben mantenerse desacoplados en una única dirección: la CLI depende de la API, la API del puente Python y el puente del aprovisionamiento; nunca al revés</td><td>Mantenibilidad</td><td>Revisión de imports en <code>lib/</code></td></tr><tr><td><span class="chip chip-nfr">NFR-12</span></td><td>Las definiciones TypeScript deben describir exactamente la superficie pública real: ningún símbolo declarado sin implementación ni tipo divergente de lo devuelto</td><td>Fiabilidad del contrato</td><td>Compilación de un consumidor TypeScript en modo estricto contra la API real</td></tr><tr><td><span class="chip chip-nfr">NFR-13</span></td><td>La publicación en npm debe realizarse desde CI, sin credenciales manuales ni publicación desde máquinas de desarrollo</td><td>Seguridad</td><td>Revisión del workflow de publicación</td></tr><tr><td><span class="chip chip-nfr">NFR-14</span></td><td>El proceso de publicación debe ser idempotente: una versión ya publicada no vuelve a publicarse aunque se repita la ejecución</td><td>Fiabilidad</td><td>Reejecución del workflow sobre una versión existente</td></tr><tr><td><span class="chip chip-nfr">NFR-15</span></td><td>Una terminación anómala del subproceso Python —código distinto de cero o muerte por señal— debe reportarse siempre como error, nunca como comparación correcta</td><td>Fiabilidad</td><td>Matar el subproceso durante una comparación y verificar que la operación falla</td></tr></tbody></table></div>
+</section>
+<section class="doc-section" id="5-restricciones-t-cnicas-no-negociables">
+<h2><a class="anchor" href="#5-restricciones-t-cnicas-no-negociables" aria-label="Enlace">#</a>5. Restricciones técnicas no negociables</h2>
+<div class="table-wrap"><table><thead><tr><th>ID</th><th>Restricción</th><th>Motivo</th></tr></thead><tbody><tr><td>RT-01</td><td>La comparación se delega <strong>íntegramente</strong> en el paquete PyPI <code>py-pdf-compare</code>, invocado como módulo Python en un subproceso. El repositorio npm <strong>no contiene código Python propio</strong></td><td>Decisión estructural adoptada al eliminar el código Python duplicado (commit <code>4b45068</code>); revertirla significa mantener dos implementaciones del mismo dominio</td></tr><tr><td>RT-02</td><td>La versión del paquete npm está <strong>acoplada 1:1</strong> a la versión de <code>py-pdf-compare</code>, y el fichero de requisitos fija esa misma versión como mínimo. Ambas son hoy <code>2026.2.3</code></td><td>Ver <strong>D-02</strong>: el wrapper no aporta funcionalidad propia versionable; una versión npm que no se corresponda con una versión del núcleo sería ruido para el consumidor</td></tr><tr><td>RT-03</td><td>El versionado sigue un esquema <strong>calendario</strong> (<code>AAAA.M.P</code>), heredado del paquete Python, no semántico</td><td>Consecuencia directa de RT-02; condiciona cómo se comunican los cambios incompatibles</td></tr><tr><td>RT-04</td><td>El entorno Python es un <strong>entorno virtual propiedad del paquete</strong>, creado con el módulo <code>venv</code> del intérprete detectado y ubicado dentro del paquete instalado (<code>node_modules/pdf-compare/.venv</code>)</td><td>Ver <strong>D-03</strong>: el aislamiento respecto al Python del sistema es el valor diferencial del wrapper frente a &quot;instálate tú <code>py-pdf-compare</code>&quot;</td></tr><tr><td>RT-05</td><td>El contrato de invocación con el núcleo es <strong>su CLI</strong>, no su API Python: argumentos posicionales de entrada más opción de salida. Cualquier cambio en esa CLI rompe el wrapper sin aviso de tipos</td><td>Es la única superficie estable que ofrece un subproceso; a cambio, no hay verificación en tiempo de compilación</td></tr><tr><td>RT-06</td><td>El criterio de &quot;sin diferencias&quot; se infiere de la <strong>salida textual del subproceso</strong> y de la ausencia del fichero de informe. La cadena esperada es literalmente la que imprime <code>pdf_compare.cli</code> y debe mantenerse sincronizada con ella</td><td>Consecuencia de RT-05: el núcleo no expone un canal estructurado de resultado (ver <strong>P-04</strong>)</td></tr><tr><td>RT-07</td><td>El conteo de páginas del informe se obtiene ejecutando <strong>PyMuPDF</strong> dentro del entorno virtual, dependencia <em>transitiva</em> de <code>py-pdf-compare</code> que este paquete no declara</td><td>Ver <strong>P-05</strong>: funciona hoy porque el núcleo la arrastra; deja de funcionar si el núcleo cambia de motor PDF</td></tr><tr><td>RT-08</td><td>La lista <code>files</code> de <code>package.json</code> gobierna el contenido del tarball; el <code>.npmignore</code> presente en el repositorio es <strong>inerte</strong> mientras <code>files</code> exista</td><td>Regla de npm, no elegible: mantener ambos induce a error (ver <strong>P-08</strong>)</td></tr><tr><td>RT-09</td><td>La publicación se realiza desde GitHub Actions, etiquetando la versión publicada con un tag <code>npm-v&lt;version&gt;</code> que actúa como registro de idempotencia</td><td>El release automático depende de ese tag como única fuente de &quot;ya publicado&quot;</td></tr><tr><td>RT-10</td><td>El paquete declara compatibilidad con las tres plataformas de escritorio y una versión mínima de Node en <code>package.json</code></td><td>npm rechaza la instalación fuera de esas condiciones; ampliarlas exige verificarlas</td></tr><tr><td>RT-11</td><td>La compatibilidad de licencias entre el código propio, <code>py-pdf-compare</code> y PyMuPDF (AGPL-3.0 o comercial) condiciona la distribución del paquete en npm</td><td>Ver <strong>P-01</strong>: hay una contradicción sin resolver</td></tr></tbody></table></div>
+</section>
+<section class="doc-section section-scope" id="6-alcance">
+<h2><a class="anchor" href="#6-alcance" aria-label="Enlace">#</a>6. Alcance</h2>
+<h3 id="dentro-de-esta-fase-as-is">Dentro de esta fase (as-is)</h3>
+<ul><li>Aprovisionamiento automático y reparable de un entorno Python aislado desde una instalación npm.</li><li>Las tres interfaces existentes: CLI de Node, API CommonJS y definiciones TypeScript.</li><li>Comparación por rutas de fichero y comparación en memoria.</li><li>Empaquetado y publicación en el registro npm con procedencia y publicación automática desde CI.</li></ul>
+<h3 id="fuera-de-esta-fase">Fuera de esta fase</h3>
+<ul><li><strong>Toda la lógica de comparación.</strong> Alineado de páginas, resaltado, render vectorial y limitaciones asociadas (PDF escaneados, diferencias no textuales) pertenecen a <code>py-pdf-compare</code> y se documentan en su propio catálogo. Este paquete hereda sus capacidades y sus límites sin poder alterarlos.</li><li><strong>Exposición de la aplicación de escritorio</strong> del paquete Python: el wrapper solo alcanza la CLI.</li><li><strong>Exposición de opciones avanzadas del núcleo</strong> (comparación textual en <em>unified diff</em>, parámetros heredados de render): la CLI Node solo traslada entrada, entrada y salida.</li><li>Distribución de un binario Python empaquetado o de ruedas precompiladas que eviten la necesidad de Python en el sistema.</li><li>Gestión del entorno mediante alternativas al <code>venv</code> estándar (<code>uv</code>, <code>pipx</code>, <code>conda</code>) o reutilización de un entorno preexistente del usuario.</li><li>Publicación de una variante ESM o de un <em>build</em> para navegador: el paquete es CommonJS y solo Node.</li><li>Comparación concurrente gestionada por el wrapper (pool de subprocesos, cola de trabajos): cada invocación arranca su propio proceso.</li><li>Cualquier funcionalidad de servidor, red o multiusuario.</li><li>Internacionalización: los mensajes de la CLI y de la instalación están en inglés y así permanecen.</li></ul>
+</section>
+<section class="doc-section" id="7-variables-de-entorno-y-configuraci-n-requerida">
+<h2><a class="anchor" href="#7-variables-de-entorno-y-configuraci-n-requerida" aria-label="Enlace">#</a>7. Variables de entorno y configuración requerida</h2>
+<p>El paquete consume <strong>una sola variable de entorno propia</strong> en tiempo de ejecución. El resto de la configuración es por argumentos de CLI o por el objeto de opciones de la API.</p>
+<div class="table-wrap"><table><thead><tr><th>Elemento</th><th>Ámbito</th><th>Uso</th></tr></thead><tbody><tr><td><code>PDF_COMPARE_SKIP_SETUP</code></td><td>Instalación</td><td>Con valor <code>1</code> o <code>true</code>, omite el aprovisionamiento automático durante <code>npm install</code> (<span class="chip chip-rf">RF-07</span>). Debe completarse después con el ejecutable de setup</td></tr><tr><td><code>python/requirements.txt</code></td><td>Instalación</td><td>Única declaración de las dependencias Python instaladas en el entorno virtual (<span class="chip chip-rf">RF-04</span>, RT-02)</td></tr><tr><td><code>node_modules/pdf-compare/.venv</code></td><td>Ejecución</td><td>Entorno virtual propiedad del paquete; ubicación del intérprete usado en cada invocación (RT-04)</td></tr><tr><td>Carpeta temporal del sistema</td><td>Ejecución</td><td>Directorio efímero de la comparación en memoria; se elimina siempre al terminar (<span class="chip chip-rf">RF-20</span>)</td></tr><tr><td><code>NPM_TOKEN</code></td><td>CI/CD</td><td>Secreto de repositorio usado para autenticar la publicación en npm (ver <strong>P-06</strong>)</td></tr><tr><td><code>GITHUB_TOKEN</code></td><td>CI/CD</td><td>Creación del tag de versión publicada; lo provee la propia plataforma</td></tr><tr><td>OIDC de GitHub Actions (<code>id-token: write</code>)</td><td>CI/CD</td><td>Permiso declarado en el job de publicación para procedencia y <em>trusted publishing</em> (ver <strong>P-06</strong>)</td></tr></tbody></table></div>
+<p>Sin secretos propios que gestionar en local.</p>
+</section>
+<section class="doc-section" id="8-preguntas-abiertas-y-pendientes">
+<h2><a class="anchor" href="#8-preguntas-abiertas-y-pendientes" aria-label="Enlace">#</a>8. Preguntas abiertas y pendientes</h2>
+<ul><li><strong>P-01 · <span class="chip chip-block">BLOQUEANTE</span> Contradicción de licencia.</strong> El fichero <code>LICENSE</code> contiene la <strong>GPL-3.0</strong>, el <code>README.md</code> enlaza a &quot;GPL-3.0&quot; y <code>package.json</code> declara <strong>MIT</strong>. Además, la cadena de dependencias llega a PyMuPDF (AGPL-3.0 o licencia comercial), lo que condiciona bajo qué licencia puede distribuirse el paquete. Hay que decidir cuál es la licencia real y alinear los tres sitios. Es el <strong>mismo bloqueo abierto en <code>Py-PDF-Compare</code> (P-01 de su catálogo)</strong> y debe resolverse una sola vez para ambos repositorios. Afecta a RT-11 y a toda la distribución (<span class="chip chip-rf">RF-27</span>).</li><li>~~<strong>P-02 · <span class="chip chip-block">BLOQUEANTE</span> El script de post-instalación está roto.</strong>~~ <strong>Resuelto el 2026-08-17.</strong> <code>scripts/postinstall.js</code> importaba de <code>lib/setup.js</code> los símbolos <code>checkPoppler</code> y <code>printPopplerInstructions</code>, ya eliminados, y leía <code>result.poppler.available</code>, propiedad que <code>setup()</code> no devuelve: <strong>toda</strong> instalación terminaba imprimiendo <code>❌ Setup failed: Cannot read properties of undefined (reading &#x27;available&#x27;)</code> aunque el entorno virtual se hubiera creado bien. Retirados los restos de la etapa Poppler; el post-install verificado de extremo a extremo termina con <code>✅ setup complete</code> y código de salida 0. <span class="chip chip-rf">RF-01</span> y <span class="chip chip-rf">RF-08</span> quedan cumplidos.</li><li><strong>P-03 · La comprobación de dependencias no comprueba las dependencias.</strong> <code>checkSetup()</code> (<code>lib/setup.js:251</code>) solo verifica que el ejecutable Python del entorno virtual existe y responde; <strong>no comprueba que <code>py-pdf-compare</code> esté instalado</strong>. Un entorno creado con una instalación de dependencias fallida se reporta como <code>ready</code>, y el fallo aparece más tarde, en la primera comparación. Además, los campos <code>python</code> y <code>venv</code> del estado devuelto son <strong>el mismo valor</strong>, por lo que la distinción que anuncian la API, los tipos y el <code>README.md</code> no existe. Decidir si la comprobación pasa a validar la importabilidad del módulo Python y si los tres campos se colapsan en uno.</li><li><strong>P-04 · Detección de &quot;sin diferencias&quot; acoplada a un mensaje de texto.</strong> La revisión del 2026-08-17 mostró que el problema era peor de lo que este documento describía: la cadena buscada (<code>&#x27;No visual differences found&#x27;</code>) <strong>nunca aparecía</strong> en la salida de <code>pdf_compare.cli</code> — que imprime <code>&quot;No differences found. No report generated.&quot;</code>, mientras que la cadena buscada solo existe en la GUI del paquete Python —, así que la detección dependía en exclusiva de la ausencia del fichero. Se corrigió la cadena y se añadió <span class="chip chip-rf">RF-32</span> (borrado del informe previo), con lo que ambos criterios vuelven a ser fiables. <strong>Sigue abierto</strong> el problema de fondo: el acoplamiento a un mensaje en inglés (RT-06) es frágil ante cualquier reescritura o traducción en el núcleo. Decidir si se solicita a <code>py-pdf-compare</code> un canal estructurado — código de salida dedicado o salida JSON, lo que sería un <em>change</em> en el repositorio hermano — o si se asume la fragilidad y se cubre con tests.</li><li>~~<strong>P-05 · Conteo de páginas por construcción de código Python en cadena.</strong>~~ <strong>Resuelto el 2026-08-17.</strong> El <em>snippet</em> interpolaba la ruta de salida dentro de un literal <code>r&quot;...&quot;</code>, de modo que una ruta con comilla doble rompía el script y una ruta controlada por el llamante permitía inyectar Python. La ruta pasa ahora por <code>sys.argv</code> y el conteo vive en una función propia con tiempo máximo, terminación forzada y drenado de <code>stderr</code>. Verificado con una ruta que contiene <code>&quot;</code> y <code>&#x27;</code>. Durante la corrección apareció un defecto adicional que nadie había detectado: <code>import fitz</code> emite en <strong>stdout</strong> un aviso de deprecación de PyMuPDF, por lo que el patrón numérico aplicado sobre la salida completa fallaba <strong>siempre</strong> y todo informe devolvía <code>pageCount: null</code> — <span class="chip chip-rf">RF-24</span> nunca se había cumplido en la práctica. Corregido importando <code>pymupdf</code> con respaldo a <code>fitz</code> y leyendo la última línea numérica. RT-07 sigue vigente: la dependencia en PyMuPDF continúa siendo transitiva y no declarada.</li><li><strong>P-06 · Modelo de autenticación de la publicación sin cerrar.</strong> El job de publicación declara <code>id-token: write</code> con el comentario &quot;required for OIDC trusted publishing&quot; pero autentica con el secreto <code>NPM_TOKEN</code>: conviven los dos modelos. Además, el job <code>verify-npm-token</code> se ejecuta en <strong>cada push de cualquier rama</strong>, no es dependencia de ningún otro job y consume el secreto sin condicionar nada. Decidir si se migra a <em>trusted publishing</em> puro (y se elimina el secreto, cumpliendo mejor <span class="chip chip-nfr">NFR-13</span>) o si se retira el permiso OIDC y el job de verificación.</li><li><strong>P-07 · [BLOQUEANTE para la calidad] No hay verificación automática.</strong> El repositorio no contiene ni un test. El script <code>npm test</code> invoca <code>sample-files/</code>, que <strong>no se publican en el tarball</strong> (<span class="chip chip-rf">RF-28</span>), por lo que solo funciona desde el código fuente. El CI construye y publica sin ejecutar el paquete en ninguna plataforma, pese a que <span class="chip chip-nfr">NFR-03</span> compromete tres. Ningún requisito de este catálogo está verificado de forma automatizada. <strong>Sigue abierto y es ahora más urgente</strong>: los cuatro defectos corregidos el 2026-08-17 (P-02, P-04, P-05 y el conteo de páginas) son exactamente lo que un único test de humo habría detectado —tres de ellos llevaban rotos desde la publicación en npm sin que nadie lo notara—, y las correcciones se validaron con comprobaciones manuales y desechables que no protegen de regresiones. Definir la suite mínima: instalación limpia, <code>--check</code>, los cuatro escenarios de <code>sample-files/</code>, informe previo obsoleto en la ruta de salida y comparación en memoria.</li><li><strong>P-08 · Restos del histórico en el repositorio.</strong> <code>.npmignore</code> es inerte (RT-08) y además excluye ficheros que ya no existen (<code>python/main.py</code>, <code>scripts/download_poppler.py</code>, <code>scripts/build_windows.py</code>); <code>uv.lock</code> permanece en la raíz aunque el código Python se trasladó al repositorio hermano. Decidir qué se elimina y qué se conserva por trazabilidad.</li><li><strong>P-09 · Divergencia de tipos en la comparación en memoria.</strong> La implementación escribe y devuelve <code>Buffer</code>, mientras que <code>types/index.d.ts</code> y el <code>README.md</code> declaran <code>Uint8Array</code>. Son compatibles en tiempo de ejecución (<code>Buffer</code> extiende <code>Uint8Array</code>), pero un consumidor TypeScript que espere <code>Uint8Array</code> no puede usar los métodos de <code>Buffer</code> que sí recibe. Incumple <span class="chip chip-nfr">NFR-12</span>. Decidir cuál de los dos es el contrato.</li><li><strong>P-10 · La restricción de acoplamiento 1:1 no está garantizada técnicamente.</strong> RT-02 fija el acoplamiento de versiones, pero <code>python/requirements.txt</code> declara <code>py-pdf-compare&gt;=2026.2.3</code> <strong>sin cota superior</strong>: una instalación futura traerá la última versión publicada del núcleo, no la que corresponde a la versión npm instalada. Decidir si se fija la versión exacta, si se acota el rango, o si se relaja RT-02 a &quot;compatible con&quot;.</li><li><strong>P-11 · Límites operativos sin definir.</strong> El tiempo máximo por defecto (2 minutos) está elegido por criterio, no por medida, y no hay criterio establecido de número máximo de páginas ni de tamaño de fichero. Desde el 2026-08-17 ese tiempo máximo se aplica también al subproceso de conteo de páginas, que antes podía quedar colgado indefinidamente; el valor en sí sigue sin medirse. Convendría cuantificarlo con documentos reales antes de comprometerlo como NFR.</li><li><strong>P-12 · Concurrencia no especificada.</strong> Nada impide invocar varias comparaciones en paralelo desde la API, y cada una arranca su propio proceso Python sin límite ni cola. No está definido cuántas invocaciones simultáneas soporta el paquete ni qué debería ocurrir al superarlas.</li></ul>
+</section>
+<section class="doc-section" id="9-decisiones-tomadas-en-el-paso-1-1">
+<h2><a class="anchor" href="#9-decisiones-tomadas-en-el-paso-1-1" aria-label="Enlace">#</a>9. Decisiones tomadas en el paso 1.1</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Pregunta</th><th>Opciones</th><th>Decisión</th><th>Origen</th><th>Justificación</th></tr></thead><tbody><tr><td>D-01</td><td>¿El documento cubre solo el estado actual o también la evolución prevista?</td><td>as-is / as-is + to-be</td><td><strong>Solo el estado actual (as-is)</strong></td><td>usuario</td><td>El repositorio es <em>brownfield</em> sin backlog definido; la línea base trazable permite que cada evolución entre después como <em>change</em> de AISDD. Coherente con la decisión equivalente en <code>Py-PDF-Compare</code></td></tr><tr><td>D-02</td><td>¿Cómo se formaliza la relación de versiones con <code>py-pdf-compare</code>?</td><td>acoplamiento 1:1 / versionado independiente / dejarlo abierto</td><td><strong>Acoplamiento 1:1</strong> (RT-02)</td><td>usuario</td><td>El wrapper no aporta funcionalidad propia versionable: publicar versiones npm desacopladas del núcleo sería ruido para el consumidor. Se registra en P-10 que el fichero de requisitos aún no lo garantiza</td></tr><tr><td>D-03</td><td>¿El entorno virtual autogestionado dentro de <code>node_modules</code> es una restricción no negociable?</td><td>restricción / decisión revisable</td><td><strong>Restricción técnica</strong> (RT-04)</td><td>usuario</td><td>El aislamiento respecto al Python del sistema es el valor diferencial del paquete frente a pedir al usuario que instale <code>py-pdf-compare</code> por su cuenta</td></tr><tr><td>D-04</td><td>¿Se repiten aquí los requisitos de comparación del núcleo?</td><td>repetir / referenciar</td><td><strong>Referenciar, no repetir</strong></td><td>default</td><td>Duplicar el catálogo del repositorio hermano crearía dos fuentes de verdad divergentes para el mismo dominio. La sección 6 declara explícitamente esa frontera</td></tr><tr><td>D-05</td><td>¿Cómo se trata la ausencia de <code>docs/cliente-requisitos.md</code>?</td><td>bloquear / continuar por ingeniería inversa</td><td><strong>Continuar por ingeniería inversa</strong></td><td>default</td><td>El producto existe y está publicado en npm; el código y el <code>README.md</code> son la fuente de verdad más fiable. Se deja constancia de que no hubo brief formal de cliente</td></tr><tr><td>D-06</td><td>¿Se documentan roles con permisos?</td><td>sí / no aplica</td><td><strong>No aplica: perfiles de uso</strong></td><td>default</td><td>Es una librería local sin autenticación ni control de acceso que modelar</td></tr><tr><td>D-07</td><td>¿Qué se hace con los defectos detectados durante la ingeniería inversa (P-02, P-03, P-05, P-09)?</td><td>corregirlos ahora / formalizar el comportamiento correcto y registrarlos</td><td><strong>Formalizar el comportamiento correcto como requisito y registrar la desviación</strong></td><td>default</td><td>Este paso produce el catálogo, no el código. Los RF describen lo que el sistema <strong>debe</strong> hacer; la sección 8 recoge dónde la implementación actual no lo cumple, para que entren como <em>changes</em> priorizables. <strong>Revisada por D-09</strong></td></tr><tr><td>D-08</td><td>¿Se resuelve la contradicción de licencia detectada?</td><td>resolver ahora / registrar como bloqueante</td><td><strong>Registrar como bloqueante</strong> (P-01)</td><td>default</td><td>Es una decisión legal del propietario del proyecto, no derivable del código, y comparte causa raíz con el bloqueo homónimo del repositorio hermano</td></tr><tr><td>D-09</td><td>¿Se aplican los hallazgos de la revisión de código del 2026-08-17?</td><td>aplicarlos ahora / dejarlos como <em>changes</em> pendientes</td><td><strong>Aplicarlos ahora</strong></td><td>usuario</td><td>Corrige D-07 para los defectos de ejecución. La revisión confirmó que tres de ellos (P-02, P-04 y el conteo de páginas) estaban rotos <strong>en la versión publicada en npm</strong>, no eran riesgos teóricos: el post-install fallaba siempre, la detección de &quot;sin diferencias&quot; dependía de una cadena inexistente y <code>pageCount</code> era siempre <code>null</code>. Se añaden <span class="chip chip-rf">RF-32</span> y <span class="chip chip-nfr">NFR-15</span> para formalizar el comportamiento corregido. D-07 sigue vigente para los defectos de contrato aún abiertos (P-03, P-09)</td></tr></tbody></table></div>
+</section>
+    </main>
+  </div>
+  <script>
+    // Theme toggle (auto -> claro -> oscuro), persisted per browser. Classic script:
+    // must keep working even without network (the Mermaid loader lives apart).
+    (function () {
+      const KEY = 'booster-docs-theme';
+      const btn = document.getElementById('themeToggle');
+      const modes = ['auto', 'light', 'dark'];
+      const icons = { auto: '\u25D1', light: '\u2600', dark: '\u263E' };
+      let mode = localStorage.getItem(KEY);
+      if (!modes.includes(mode)) mode = 'auto';
+      function apply() {
+        if (mode === 'auto') delete document.documentElement.dataset.theme;
+        else document.documentElement.dataset.theme = mode;
+        btn.textContent = icons[mode];
+        btn.title = 'Tema: ' + mode;
+      }
+      btn.addEventListener('click', () => {
+        mode = modes[(modes.indexOf(mode) + 1) % modes.length];
+        localStorage.setItem(KEY, mode);
+        apply();
+      });
+      apply();
+    })();
+
+    // Scroll-spy: highlight the current section in the TOC.
+    (function () {
+      const links = [...document.querySelectorAll('.toc a')];
+      if (!links.length) return;
+      const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            links.forEach(a => a.classList.remove('active'));
+            const a = map.get(e.target.id);
+            if (a) a.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-10% 0px -80% 0px' });
+      document.querySelectorAll('section[id]').forEach(s => obs.observe(s));
+    })();
+  </script>
+  <script>
+    // Mermaid loader, best-effort and fail-visible.
+    //
+    // Uses the SELF-CONTAINED bundle (mermaid.min.js), never the ESM entry: the
+    // ESM build lazy-loads one chunk per diagram type at render time, so a single
+    // blocked request behind a corporate proxy leaves the diagrams silently blank
+    // -- and it fails inside Mermaid's async render, out of reach of any try/catch
+    // around the import.
+    //
+    // Order: the local copy next to this HTML first (works offline, over file://
+    // and behind a
+    // proxy), then the CDN. Classic <script> tags, so onerror actually fires and
+    // the fallback chain is real. If everything fails, the source stays visible
+    // with a notice instead of an empty gap.
+    (function () {
+      if (!document.querySelector('.mermaid')) return;
+      // Same pinned version on both ends, so the CDN fallback cannot drift from
+      // the local asset this script provisions.
+      var sources = ['mermaid.min.js',
+                     'https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.min.js'];
+      function fail() {
+        document.querySelectorAll('.diagram').forEach(function (d) {
+          d.classList.add('offline');
+        });
+      }
+      function start() {
+        try {
+          var dark = document.documentElement.dataset.theme === 'dark'
+            || (document.documentElement.dataset.theme !== 'light'
+                && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          mermaid.initialize({ startOnLoad: false, securityLevel: 'strict',
+                               theme: dark ? 'dark' : 'default' });
+          // Explicit run() instead of startOnLoad: it returns a promise, so a
+          // render error is catchable rather than swallowed.
+          mermaid.run({ querySelector: '.mermaid' }).catch(fail);
+        } catch (e) { fail(); }
+      }
+      function load(i) {
+        if (i >= sources.length) { fail(); return; }
+        var s = document.createElement('script');
+        s.src = sources[i];
+        s.onload = start;
+        s.onerror = function () { load(i + 1); };
+        document.head.appendChild(s);
+      }
+      load(0);
+    })();
+  </script>
+</body>
+</html>
